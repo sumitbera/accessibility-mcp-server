@@ -1,0 +1,47 @@
+{
+    "quick": {
+        "runOnly": {
+            "type": "tag",
+            "value": ["wcag2a"]
+        }
+    },
+    "full": {
+        "runOnly": {
+            "type": "tag",
+            "value": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"]
+        },
+        "rules": {
+            "html-has-lang": { "enabled": true },
+            "region": { "enabled": true },
+            "landmark-unique": { "enabled": true },
+            "meta-viewport": { "enabled": true },
+            "duplicated-id": { "enabled": true }
+        }
+    },
+    "screen-reader-focus": {
+        "rules": {
+            "aria-roles": { "enabled": true },
+            "aria-valid-attr": { "enabled": true },
+            "aria-required-attr": { "enabled": true },
+            "color-contrast": { "enabled": true },
+            "label": { "enabled": true },
+            "keyboard": { "enabled": true },
+            "tabindex": { "enabled": true },
+            "heading-order": { "enabled": true },
+            "accesskeys": { "enabled": true }
+        }
+    },
+    "strict": {
+        "runOnly": {
+            "type": "tag",
+            "value": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice", "cat.forms", "cat.color", "cat.keyboard", "cat.semantics", "cat.name-role-value"]
+        },
+        "rules": {
+            "scrollable-region-focusable": { "enabled": true },
+            "focus-traps": { "enabled": true },
+            "nested-interactive": { "enabled": true },
+            "frame-title": { "enabled": true },
+            "label-title-only": { "enabled": true }
+        }
+    }
+}
