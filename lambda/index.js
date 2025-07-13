@@ -3,30 +3,43 @@ const { callMCP } = require('./mcpClient');
 
 exports.handler = async (event) => {
     try {
-        const body = JSON.parse(event.body);
-        const userprompt = body.prompt;
-        if (!userPrompt) {
-            return { statusCode: 400, body: 'Missing "prompt" in request body' };
+        const body = JSON.parse(event.body || '{}');
+        const userPrompt = body.prompt;
+
+        if (!userPrompt || userPrompt.trim().length < 5) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: 'Invalid or missing "prompt"' })
+            };
         }
-        //Step 1: Ask bedrock to generate a test flow
+
+        //Step 1: Ask LLM to generate test flow
         const flow = await callLLM(userPrompt);
 
+        if (!flow?.url || !flow?.steps?.length) {
+            return {
+                statusCode: 422,
+                body: JSON.stringify({ error: 'LLM returned an invalid test flow' })
+            };
+        }
+
         //Step 2: Forward the flow to MCP server for execution
-        const testResult = await callMCP(flow);
+        const result = await callMCP(flow);
 
         return {
             statusCode: 200,
             body: JSON.stringify({
+                status: 'success',
                 flow,
-                result: testResult.summary,
-                htmlReport: testResult.htmlReport
+                result: result?.summary || {},
+                htmlReport: result.htmlReport
             })
         };
     } catch (error) {
         console.error('Error processing request:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Internal Server Error' })
-        }
+            body: JSON.stringify({ error: 'Unexpected error occurred', details: error.message })
+        };
     }
 };
