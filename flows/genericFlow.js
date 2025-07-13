@@ -1,5 +1,10 @@
 const { chromium } = require('playwright');
 
+const {ensureDir, clearDir} = require('../utils/fsUtils');
+const screenDir = path.join(__dirname, '../screens');
+ensureDir(screenDir);
+clearDir(screenDir);
+
 const supportedActions = {
     goto: async (page, step) => await page.goto(step.value),
     fill: async (page, step) => await page.fill(step.selector, step.value),
