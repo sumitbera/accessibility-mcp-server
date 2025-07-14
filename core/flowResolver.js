@@ -1,5 +1,5 @@
 const promptToFlow = require('./promptToFlow');
-const genericFlow = require('./flows/genericFlow');
+const genericFlow = require('../flows/genericFlow');
 const axeRunner = require('../engines/axeRunner');
 
 module.exports = async (prompt) => {
