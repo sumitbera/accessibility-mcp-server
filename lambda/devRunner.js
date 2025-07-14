@@ -24,3 +24,4 @@ async function run() {
         console.error('❌ Dry run failed:', error.message);
     }
 }
+run();
