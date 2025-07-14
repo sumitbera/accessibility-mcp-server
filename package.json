@@ -8,15 +8,16 @@
     "dev": "nodemon core/server.js"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "3.844.0",
     "axe-core": "^4.6.3",
+    "axe-html-reporter": "2.2.11",
     "axe-playwright": "^2.1.0",
+    "axios": "1.10.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "fs-extra": "^11.1.1",
-    "playwright": "^1.54.0",
-    "axe-html-reporter": "2.2.11",
-    "@aws-sdk/client-bedrock-runtime": "3.844.0",
-    "axios": "1.10.0"
+    "playwright": "^1.54.0"
   },
   "devDependencies": {
     "eslint": "^8.56.0",
