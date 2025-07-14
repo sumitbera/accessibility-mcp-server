@@ -1,7 +1,9 @@
 const { chromium } = require('playwright');
-
+const fs = require('fs');
+const path = require('path');
 const {ensureDir, clearDir} = require('../utils/fsUtils');
-const screenDir = path.join(__dirname, '../screens');
+
+const screenDir = path.join(__dirname, '../reports/steps');
 ensureDir(screenDir);
 clearDir(screenDir);
 
