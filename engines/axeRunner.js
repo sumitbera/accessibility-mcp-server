@@ -1,7 +1,7 @@
 const { injectAxe, getViolations } = require('axe-playwright');
 const fs = require('fs');
 const path = require('path');
-const { createHtlmReport } = require('axe-html-reporter');
+const { createHtmlReport } = require('axe-html-reporter');
 const { ensureDir, clearDir } = require('../utils/fsUtils');
 const config = require('../profiles/accessibility.config.json');
 
@@ -10,9 +10,9 @@ module.exports = async function runAxe(page, profile = 'quick') {
     const axeOptions = config[profile] || config.quick;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
-    const reportDir = path.join(__dirname, '../reports/a11y');
-    ensureDir(reportDir);
-    clearDir(reportDir); //Clean old a11y reports before this run
+    const reportsDir = path.join(__dirname, '../reports/a11y');
+    ensureDir(reportsDir);
+    clearDir(reportsDir); //Clean old a11y reports before this run
 
     console.log(`[A11Y] Injecting Axe and running with profile: ${profile}`);
     await injectAxe(page);
@@ -24,7 +24,7 @@ module.exports = async function runAxe(page, profile = 'quick') {
 
     //Generate HTML report
     const htmlReportPath = path.join(reportsDir, `axe-report-${timestamp}.html`);
-    createHtlmReport({
+    createHtmlReport({
         results: { violations },
         options: {
             outputDir: reportsDir,
