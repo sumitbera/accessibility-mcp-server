@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { BedrockRuntimeClient, InvokeModelWithResponseStreamCommand } = require('@aws-sdk/client-bedrock-runtime');
+const { BedrockRuntimeClient, InvokeModelCommand } = require('@aws-sdk/client-bedrock-runtime');
 require('dotenv').config();
 
 const bedrock = new BedrockRuntimeClient({ region: process.env.AWS_REGION || 'us-east-1' });
@@ -19,7 +19,7 @@ async function callLLM(userPrompt) {
         ];
 
         const payload = {
-            modelId: modelId,
+            modelId,
             contentType: 'application/json',
             accept: 'application/json',
             body: JSON.stringify({ 
@@ -29,7 +29,7 @@ async function callLLM(userPrompt) {
             })
         };
 
-        const command = new InvokeModelWithResponseStreamCommand(payload);
+        const command = new InvokeModelCommand(payload);
         const response = await bedrock.send(command);
         const body = await streamToString(response.body);
         
