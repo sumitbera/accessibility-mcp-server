@@ -7,6 +7,6 @@ module.exports = {
         {action: 'waitForSelector', selector: '#dashboard'} 
     ],
     home: [
-        {action: 'goto', value: 'https://example.com'}
+        {action: 'goto', value: 'https://www.digital.nsw.gov.au/'}
     ]
 };
