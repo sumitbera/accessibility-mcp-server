@@ -1,11 +1,9 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
-const {ensureDir, clearDir} = require('../utils/fsUtils');
+const { ensureDir, clearDir } = require('../utils/fsUtils');
 
 const screenDir = path.join(__dirname, '../reports/steps');
-ensureDir(screenDir);
-clearDir(screenDir);
 
 const supportedActions = {
     goto: async (page, step) => await page.goto(step.value),
@@ -19,16 +17,21 @@ const supportedActions = {
     waitForSelector: async (page, step) => await page.waitForSelector(step.selector),
     waitForTimeout: async (page, step) => await page.waitForTimeout(step.value),
     press: async (page, step) => await page.press(step.selector, step.value),
+    close: async (page) => await page.close(),
     evaluate: async (page, step) => await page.evaluate(step.value),
     expectedVisible: async (page, step) => {
         const isVisible = await page.isVisible(step.selector);
         if (!isVisible) throw new Error(`Element ${step.selector} not visible`);
     },
-    screenshot: async (page, step) => await page.screenshot({ path: step.value || 'screenshot.png' }),
-    close: async (page) => await page.close()
+    screenshot: async (page, step) => {
+        const screenshotPath = step.value || path.join(screenDir, `step-${Date.now()}.png`);
+        await page.screenshot({ path: screenshotPath, fullPage: true });
+    }
 };
 
 module.exports = async ({ url, steps }) => {
+    ensureDir(screenDir);
+    clearDir(screenDir);
     const browser = await chromium.launch();
     const context = await browser.newContext();
     const page = await context.newPage();
