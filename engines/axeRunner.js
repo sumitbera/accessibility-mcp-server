@@ -30,9 +30,11 @@ module.exports = async function runAxe(page, profile = 'quick') {
         options: {
             outputDir: reportsDir,
             reportFileName: htmlFileName,  // ✅ Include .html
-            reportTitle: `Accessibility Report - ${profile}`,
-            theme: 'dark',
-            showOnlyViolations: true
+            reportTitle: `Accessibility Report - ${profile} - ${new Date().toLocaleString()}`,
+            theme: 'auto',
+            showOnlyViolations: false,
+            includePasses: true,
+            detailedReport: true
         }
     });
 
