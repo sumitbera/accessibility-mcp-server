@@ -14,7 +14,7 @@ async function run() {
         const flow = await callLLM(prompt);
         console.log('✅ Flow generated successfully:', JSON.stringify(flow, null, 2));
 
-        console.log('🚀 Sending to MCP...');
+        console.log('🚀 Sending flow to MC server...');
         const result = await callMCP(flow);
 
         console.log('\n🎯 Test Complete');

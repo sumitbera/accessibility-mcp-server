@@ -3,22 +3,22 @@ module.exports = async function(prompt) {
 
     if(lower.includes('login')) {
         return {
-            url: 'https://example.com/login',
+            url: 'https://www.automationexercise.com/',
             profile: 'full',
             steps: [
-                {action: 'goto', value: 'https://example.com/login'},
-                {action: 'fill', selector: '#username', value: 'admin'},
-                {action: 'fill', selector: '#password', value: '1234'},
-                {action: 'click', selector: 'button[type="submit"]'},
-                {action: 'waitForSelector', selector: '#dashboard'}
+                {action: 'goto', value: 'https://www.automationexercise.com/'},
+                // {action: 'fill', selector: '#username', value: 'admin'},
+                // {action: 'fill', selector: '#password', value: '1234'},
+                // {action: 'click', selector: 'button[type="submit"]'},
+                // {action: 'waitForSelector', selector: '#dashboard'}
             ]
         };
     }
 
 // fallback default
     return {
-        url: 'https://example.com',
+        url: 'https://www.automationexercise.com/',
         profile: 'quick',
-        steps: [{action: 'goto', value: 'https://example.com'}]
+        steps: [{action: 'goto', value: 'https://www.automationexercise.com/'}]
     };
 };
