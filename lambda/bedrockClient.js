@@ -5,54 +5,46 @@ require('dotenv').config();
 
 const bedrock = new BedrockRuntimeClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
-// Load system prompt from pormpts folder
+// Load system prompt
 const promptTemplate = fs.readFileSync(path.join(__dirname, 'prompts/extract-intent.txt'), 'utf-8');
-
-// Model ID loaded from environment variable
 const modelId = process.env.BEDROCK_MODEL_ID;
 
 async function callLLM(userPrompt) {
     try {
-        const input = [
-            { role: "system", content: promptTemplate },
-            { role: "user", content: userPrompt }
+        const messages = [
+            { role: "user", content: promptTemplate + "\n" + userPrompt }
         ];
 
-        const payload = {
+        const body = JSON.stringify({
+            messages,
+            max_tokens: 1024,
+            temperature: 0.7,
+            anthropic_version: "bedrock-2023-05-31" // required for Claude 3.5
+        });
+
+        const command = new InvokeModelCommand({
             modelId,
             contentType: 'application/json',
             accept: 'application/json',
-            body: JSON.stringify({ 
-                messages: input,
-                temperature: 0.7,
-                maxTokens: 1024 
-            })
-        };
+            body
+        });
 
-        const command = new InvokeModelCommand(payload);
         const response = await bedrock.send(command);
-        const body = await streamToString(response.body);
-        
-        const result = JSON.parse(body);
+
+        // No need to stream, just parse the response body
+        const responseBody = await response.body.transformToString();
+        const result = JSON.parse(responseBody);
+
         if (!result.content?.[0]?.text) {
-            throw new Error('No response content from LLM')
+            throw new Error('No response text from Claude');
         }
 
         return JSON.parse(result.content[0].text);
+
     } catch (error) {
         console.error('[Bedrock] LLM error:', error);
         throw new Error('Failed to get response from Bedrock');
     }
-}
-
-//Helper function to convert stream to string
-function streamToString(stream) {
-    return new Promise((resolve, reject) => {
-        const chunks = [];
-        stream.on('data', (chunk) => chunks.push(chunk));
-        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
-        stream.on('error', reject);
-    });
 }
 
 module.exports = { callLLM };
