@@ -3,23 +3,29 @@ const axeRunner = require('../engines/axeRunner');
 
 module.exports = async (flowConfig) => {
     try {
-        // Expecting flowConfig to be a JSON string from the LLM
-        const { steps, profile = 'quick', url } = flowConfig;
-        if(!steps || !url) throw new Error('Invalid flow strucuture');
-    
-        // Execute generic playwright flow
-        const context = await genericFlow({url, steps});
-        
-        // Run accessibility checks using Axe
-        const results = await axeRunner(context.page, profile);
-        
-        //Close the browser
+        const { steps, profile, url } = flowConfig;
+
+        // Fallback to 'quick' only if profile is missing
+        const finalProfile = profile || 'quick';
+
+        if (!steps || !url) {
+            throw new Error('Invalid flow structure: missing url or steps[]');
+        }
+
+        console.log(`[FlowResolver] Running flow for URL: ${url} with profile: ${finalProfile}`);
+
+        // Execute generic Playwright flow
+        const context = await genericFlow({ url, steps });
+
+        // Run accessibility checks with the selected profile
+        const results = await axeRunner(context.page, finalProfile);
+
+        // Close the browser
         await context.browser.close();
-        
+
         return results;
     } catch (error) {
         console.error('flowResolver failed:', error);
         throw new Error(`Flow execution error: ${error.message}`);
-
     }
 };
