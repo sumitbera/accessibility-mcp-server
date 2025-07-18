@@ -33,14 +33,19 @@
     "strict": {
         "runOnly": {
             "type": "tag",
-            "value": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice", "cat.forms", "cat.color", "cat.keyboard", "cat.semantics", "cat.name-role-value"]
+            "values": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice", "cat.forms", "cat.color", "cat.keyboard", "cat.semantics", "cat.name-role-value"]
         },
         "rules": {
-            "scrollable-region-focusable": { "enabled": true },
-            "focus-traps": { "enabled": true },
+            "color-contrast": { "enabled": true },
             "nested-interactive": { "enabled": true },
+            "scrollable-region-focusable": { "enabled": true },
             "frame-title": { "enabled": true },
-            "label-title-only": { "enabled": true }
-        }
-    }
+            "label": { "enabled": true },
+            "image-alt": { "enabled": true },
+            "landmark-one-main": { "enabled": true },
+            "aria-valid-attr-value": { "enabled": true },
+            "aria-allowed-role": { "enabled": true }
+  }
+}
+
 }
