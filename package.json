@@ -1,5 +1,6 @@
 {
   "name": "accessibility-mcp-server",
+  "author": "Sumit Bera", 
   "version": "1.0.0",
   "description": "LLM-driven accessibility mcp server using Playwright and Axe",
   "main": "core/server.js",
@@ -13,10 +14,13 @@
     "axe-html-reporter": "2.2.11",
     "axe-playwright": "^2.1.0",
     "axios": "1.10.0",
+    "boxen": "^8.0.1",
+    "cfonts": "^3.3.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "fs-extra": "^11.3.0",
+    "ora": "^8.2.0",
     "playwright": "^1.54.0"
   },
   "devDependencies": {
