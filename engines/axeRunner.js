@@ -5,6 +5,9 @@ const { createHtmlReport } = require('axe-html-reporter');
 const { ensureDir, clearDir } = require('../utils/fsUtils');
 const config = require('../profiles/accessibility.config.json');
 
+const allureResultsDir = path.join(__dirname, '../reports/allure-results');
+ensureDir(allureResultsDir); // Ensure the directory exists
+
 module.exports = async function runAxe(page, profile = 'quick') {
     const axeOptions = config[profile] || config.quick;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -21,26 +24,26 @@ module.exports = async function runAxe(page, profile = 'quick') {
     const jsonReportPath = path.join(reportsDir, `a11y-results-${timestamp}.json`);
     fs.writeFileSync(jsonReportPath, JSON.stringify(violations, null, 2));
 
-    // Save HTML report — must include .html extension manually
-    const htmlFileName = `axe-report-${profile}-${timestamp}.html`;
-    const htmlReportPath = path.join(reportsDir, htmlFileName);
+    // Create Allure results
+    const allureFile = path.join(allureResultsDir, `result-${timestamp}.json`);
+    const allureData = {
+        name: `Accessibility Check - ${profile}`,
+        status: violations.length ? 'failed' : 'passed',
+        stage: 'finished',
+        steps: violations.map(v => ({
+            name: `Violation: ${v.id}`,
+            status: 'failed',
+            attachments: [
+                { name: 'Description', source: v.description, type: 'text/plain' }
+            ]
+        })),
+        attachments: [
+            { name: 'Full Report', source: jsonReportPath, type: 'application/json' }
+        ]
+    };
+    fs.writeFileSync(allureFile, JSON.stringify(allureData, null, 2));
 
-    createHtmlReport({
-        results: { violations },
-        options: {
-            outputDir: reportsDir,
-            reportFileName: htmlFileName,  // ✅ Include .html
-            reportTitle: `Accessibility Report - ${profile} - ${new Date().toLocaleString()}`,
-            theme: 'auto',
-            showOnlyViolations: false,
-            includePasses: true,
-            detailedReport: true
-        }
-    });
-
-    console.log(`[A11Y] Reports saved:`);
-    console.log(`- JSON → ${jsonReportPath}`);
-    console.log(`- HTML → ${htmlReportPath}`);
+    console.log(`[A11Y] Allure result saved: ${allureFile}`);
 
     return {
         profile,
@@ -53,6 +56,6 @@ module.exports = async function runAxe(page, profile = 'quick') {
             nodes: v.nodes.map(n => n.target).flat()
         })),
         jsonReportPath,
-        htmlReportPath
+        allureResults: allureFile
     };
 };

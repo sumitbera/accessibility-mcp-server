@@ -1,0 +1,123 @@
+[
+  {
+    "prompt": "Run a strict accessibility scan on login page of https://example.com with username admin and password admin123",
+    "expected": {
+      "url": "https://example.com/login",
+      "profile": "strict",
+      "steps": [
+        { "action": "goto", "value": "https://example.com/login" },
+        { "action": "fill", "selector": "#username", "value": "admin" },
+        { "action": "fill", "selector": "#password", "value": "admin123" },
+        { "action": "click", "selector": "button[type=submit]" },
+        { "action": "waitForSelector", "selector": "#dashboard" }
+      ]
+    }
+  },
+  {
+    "prompt": "Perform a full accessibility test on https://example.com/home",
+    "expected": {
+      "url": "https://example.com/home",
+      "profile": "full",
+      "steps": [
+        { "action": "goto", "value": "https://example.com/home" },
+        { "action": "waitForSelector", "selector": "h1.home-title" }
+      ]
+    }
+  },
+  {
+    "prompt": "Run a quick accessibility check for https://shop.example.com",
+    "expected": {
+      "url": "https://shop.example.com",
+      "profile": "quick",
+      "steps": [
+        { "action": "goto", "value": "https://shop.example.com" }
+      ]
+    }
+  },
+  {
+    "prompt": "Test screen reader accessibility on https://example.com",
+    "expected": {
+      "url": "https://example.com",
+      "profile": "screen-reader-focus",
+      "steps": [
+        { "action": "goto", "value": "https://example.com" }
+      ]
+    }
+  },
+  {
+    "prompt": "Run a keyboard-only accessibility test for https://example.com/signup",
+    "expected": {
+      "url": "https://example.com/signup",
+      "profile": "keyboard-only",
+      "steps": [
+        { "action": "goto", "value": "https://example.com/signup" },
+        { "action": "waitForSelector", "selector": "form#signup" }
+      ]
+    }
+  },
+  {
+    "prompt": "Perform a strict check on https://example.com/contact",
+    "expected": {
+      "url": "https://example.com/contact",
+      "profile": "strict",
+      "steps": [
+        { "action": "goto", "value": "https://example.com/contact" },
+        { "action": "waitForSelector", "selector": "form#contact" }
+      ]
+    }
+  },
+  {
+    "prompt": "Login to https://example.com/login with admin credentials and navigate to dashboard",
+    "expected": {
+      "url": "https://example.com/login",
+      "profile": "quick",
+      "steps": [
+        { "action": "goto", "value": "https://example.com/login" },
+        { "action": "fill", "selector": "#username", "value": "admin" },
+        { "action": "fill", "selector": "#password", "value": "admin123" },
+        { "action": "click", "selector": "button[type=submit]" },
+        { "action": "waitForSelector", "selector": "#dashboard" }
+      ]
+    }
+  },
+  {
+    "prompt": "Check accessibility for the search flow on https://example.com",
+    "expected": {
+      "url": "https://example.com",
+      "profile": "quick",
+      "steps": [
+        { "action": "goto", "value": "https://example.com" },
+        { "action": "fill", "selector": "#search-box", "value": "test query" },
+        { "action": "press", "selector": "#search-box", "value": "Enter" },
+        { "action": "waitForSelector", "selector": "#results" }
+      ]
+    }
+  },
+  {
+    "prompt": "Run a full accessibility test for checkout page on https://shop.example.com/checkout",
+    "expected": {
+      "url": "https://shop.example.com/checkout",
+      "profile": "full",
+      "steps": [
+        { "action": "goto", "value": "https://shop.example.com/checkout" },
+        { "action": "waitForSelector", "selector": "form#checkout" }
+      ]
+    }
+  },
+  {
+    "prompt": "Perform a strict accessibility check on multi-step login and home pages of https://example.com",
+    "expected": {
+      "url": "https://example.com/login",
+      "profile": "strict",
+      "steps": [
+        { "action": "goto", "value": "https://example.com/login" },
+        { "action": "fill", "selector": "#username", "value": "admin" },
+        { "action": "fill", "selector": "#password", "value": "admin123" },
+        { "action": "click", "selector": "button[type=submit]" },
+        { "action": "waitForSelector", "selector": "#dashboard" },
+        { "action": "goto", "value": "https://example.com/home" },
+        { "action": "waitForSelector", "selector": "h1.home-title" }
+      ]
+    }
+  }
+]
