@@ -1,6 +1,14 @@
 // flows/actions/basicActions.js
 module.exports = {
-    goto: async (page, step) => await page.goto(step.value),
+    goto: async (page, step) => {
+        console.log(`[MCP] Navigating to ${step.value}`);
+        await page.goto(step.value, {
+            waitUntil: step.waitUntil || 'load', // Ensure full page load
+            timeout: 60000
+        });
+        // Ensure the page load state is stable
+        await page.waitForLoadState('load');
+},
     fill: async (page, step) => await page.fill(step.selector, step.value),
     type: async (page, step) => await page.type(step.selector, step.value, { delay: step.delay || 50 }),
     click: async (page, step) => await page.click(step.selector),

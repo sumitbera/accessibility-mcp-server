@@ -1,3 +1,4 @@
+// flows/actions/extendedActions.js
 module.exports = {
     expectedVisible: async (page, step) => {
         if (!(await page.isVisible(step.selector))) {
@@ -21,9 +22,7 @@ module.exports = {
             throw new Error(`URL mismatch: expected '${step.value}', got '${currentURL}'`);
         }
     },
-    waitForNavigation: async (page, step) => await page.waitForNavigation({ waitUntil: step.value || 'load' }),
-    waitForResponse: async (page, step) => await page.waitForResponse(step.value),
-    waitForNetworkIdle: async (page) => await page.waitForLoadState('networkidle'),
+    waitForLoad: async (page) => await page.waitForLoadState('load', { timeout: 60000 }),
 
     screenshotStep: async (page, step) => {
         const path = step.value || `step-${Date.now()}.png`;
