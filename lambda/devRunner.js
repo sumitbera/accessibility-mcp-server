@@ -2,19 +2,6 @@ const { callLLM } = require('./bedrockClient');
 const { callMCP } = require('./mcpClient');
 require('dotenv').config();
 
-function simplifyFlow(flow, userPrompt) {
-    const lowerPrompt = userPrompt.toLowerCase();
-    const isSimpleScan = !(lowerPrompt.includes('login') || lowerPrompt.includes('sign up') || lowerPrompt.includes('register') || lowerPrompt.includes('checkout'));
-
-    if (isSimpleScan) {
-        flow.steps = [
-            { action: 'goto', value: flow.url }
-        ];
-    }
-
-    return flow;
-}
-
 async function run() {
     const prompt = process.argv.slice(2).join(' ');
     if (!prompt) {
@@ -24,22 +11,19 @@ async function run() {
     }
 
     try {
-        console.log('Generating flow from LLM...');
-        let flow = await callLLM(prompt);
-
-        // Simplify for single page scans
-        flow = simplifyFlow(flow, prompt);
-
+        console.log('🧠 Generating flow from LLM...');
+        const flow = await callLLM(prompt);
         console.log('✅ Flow generated successfully:', JSON.stringify(flow, null, 2));
 
         console.log('🚀 Sending flow to MCP server...');
         const result = await callMCP(flow);
 
         console.log('\n🎯 Test Complete');
-        console.log('Violations:', result.summary?.length || 0);
-        console.log('HTML Report:', result.htmlReport);
+        console.log(`Total Violations: ${result.summary?.length || 0}`);
+        console.log(`HTML Report: ${result.htmlReportPath}`);
+        console.log(`JSON Report: ${result.jsonReportPath}`);
     } catch (error) {
-        console.error('❌ Dry run failed:', error.message);
+        console.error('❌ Test run failed:', error.message);
     }
 }
 
