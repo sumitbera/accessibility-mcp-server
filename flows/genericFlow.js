@@ -1,32 +1,40 @@
 const { chromium } = require('playwright');
-const basicActions = require('./actions/basicActions');
-const extendedActions = require('./actions/extendedActions');
+const basicActions = require('./basicActions');
+const extendedActions = require('./extendedActions');
+const axeRunner = require('../engines/axeRunner');
+const { addScanResult } = require('../utils/reportAggregator');
 
-// Merge all actions
-const supportedActions = { ...basicActions, ...extendedActions };
+const allActions = { ...basicActions, ...extendedActions };
 
-module.exports = async ({ url, steps }) => {
-    const browser = await chromium.launch();
-    const context = await browser.newContext();
-    const page = await context.newPage();
+module.exports = async ({ url, steps, name = 'Unnamed Page', profile = 'quick' }) => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
 
-    console.log(`[MCP] Navigating to ${url}`);
-    await page.goto(url);
+  console.log(`[MCP] Navigating to ${url}`);
+  await page.goto(url);
 
-    for (const step of steps) {
-        const action = supportedActions[step.action];
-        if (!action) {
-            console.warn(`[MCP] Unsupported action: ${step.action}`);
-            continue;
-        }
-        try {
-            console.log(`[MCP] Executing: ${step.action} ${step.selector || step.value}`);
-            await action(page, step);
-        } catch (err) {
-            console.error(`[MCP] Step failed ${JSON.stringify(step)} → ${err.message}`);
-            throw err; // Stop execution on failure
-        }
+  for (const step of steps) {
+    if (step.action === 'scan') {
+      console.log(`[MCP] Running accessibility scan on: ${name}`);
+      const results = await axeRunner(page, profile);
+      addScanResult(name, results);
+      continue;
     }
 
-    return { browser, page };
+    const action = allActions[step.action];
+    if (!action) {
+      console.warn(`[MCP] Unsupported action: ${step.action}`);
+      continue;
+    }
+    try {
+      console.log(`[MCP] Executing: ${step.action} ${step.selector || step.value}`);
+      await action(page, step);
+    } catch (err) {
+      console.error(`[MCP] Step failed ${JSON.stringify(step)} → ${err.message}`);
+      throw err;
+    }
+  }
+
+  return { browser, page };
 };
