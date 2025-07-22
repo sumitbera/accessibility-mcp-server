@@ -5,7 +5,6 @@ const { clearDir, ensureDir } = require('../utils/fsUtils');
 const path = require('path');
 require('dotenv').config();
 
-// Define the reports directory
 const reportsDir = path.join(__dirname, '../reports');
 
 async function run() {
@@ -17,7 +16,7 @@ async function run() {
   }
 
   try {
-    // Prepare reports directory
+    // Clean and prepare the reports directory
     ensureDir(reportsDir);
     clearDir(reportsDir);
     console.log(`[MCP] Reports directory cleaned: ${reportsDir}`);
@@ -25,14 +24,16 @@ async function run() {
     console.log('🧠 Generating flow(s) from LLM...');
     const flowData = await callLLM(prompt);
 
-    // Handle single or multi-stage flows
+    // Handle single or multi-step flows
     const flows = Array.isArray(flowData.flows) ? flowData.flows : [flowData];
     console.log(`✅ LLM generated ${flows.length} flow(s).`);
 
-    // Execute each flow
-    for (const flow of flows) {
-      console.log(`🚀 Executing flow: ${flow.name || flow.url}`);
-      await callMCP(flow);
+    for (let i = 0; i < flows.length; i++) {
+      const flow = flows[i];
+      const isLastFlow = i === flows.length - 1;
+
+      console.log(`\n🚀 Executing flow: ${flow.name || flow.url}`);
+      await callMCP(flow, isLastFlow);
     }
 
     // Generate final combined report
@@ -40,7 +41,6 @@ async function run() {
     generateCombinedReport();
 
     console.log(`📄 Combined report ready: ${path.join(reportsDir, 'combined-accessibility-report.html')}`);
-
   } catch (error) {
     console.error('❌ Dry run failed:', error.message);
   }
