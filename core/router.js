@@ -5,7 +5,7 @@ const flowResolver = require('./flowResolver');
 // POST /accessibility/test
 router.post('/test', async (req, res) => {
     try {
-        const flowConfig = req.body;
+        const { isLastFlow = false, ...flowConfig } = req.body;
 
         // Basic payload validation
         if (!flowConfig || typeof flowConfig !== 'object') {
@@ -14,15 +14,17 @@ router.post('/test', async (req, res) => {
         }
 
         const { url, steps, profile } = flowConfig;
-        if (!url || !Array.isArray(steps)) {
+
+        // For first flow (when shared browser context does not exist), url is mandatory
+        if (!url && !steps) {
             console.warn('[MCP] Invalid flow structure:', flowConfig);
             return res.status(400).json({ error: 'Invalid flow structure: missing url or steps[]' });
         }
 
-        console.log(`[MCP] Executing flow for URL: ${url}`);
-        console.log(`[MCP] Profile: ${profile || 'quick'}, Steps: ${steps.length}`);
+        console.log(`[MCP] Executing flow ${flowConfig.name || ''} ${url ? `for URL: ${url}` : ''}`);
+        console.log(`[MCP] Profile: ${profile || 'quick'}, Steps: ${steps?.length || 0}, isLastFlow: ${isLastFlow}`);
 
-        const result = await flowResolver(flowConfig);
+        const result = await flowResolver(flowConfig, isLastFlow);
 
         // Send the accessibility results
         res.json(result);
