@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
-const basicActions = require('./basicActions');
-const extendedActions = require('./extendedActions');
+const basicActions = require('../flows/actions/basicActions');
+const extendedActions = require('../flows/actions/extendedActions');
 const axeRunner = require('../engines/axeRunner');
 const { addScanResult } = require('../utils/reportAggregator');
 
