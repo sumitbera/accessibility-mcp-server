@@ -1,6 +1,5 @@
 const { callLLM } = require('./bedrockClient');
 const { callMCP } = require('./mcpClient');
-const { generateCombinedReport } = require('../utils/reportAggregator');
 const { clearDir, ensureDir } = require('../utils/fsUtils');
 const path = require('path');
 require('dotenv').config();
@@ -32,17 +31,23 @@ async function run() {
       const flow = flows[i];
       const isLastFlow = i === flows.length - 1;
 
-      console.log(`\n🚀 Executing flow: ${flow.name || flow.url}`);
-      await callMCP(flow, isLastFlow);
+      // Ensure flow name is present
+      if (!flow.name) {
+        flow.name = `Flow ${i + 1} - ${flow.url || 'Unnamed URL'}`;
+      }
+
+      console.log(`\n🚀 Executing flow: ${flow.name}`);
+      const result = await callMCP(flow, isLastFlow);
+
+      console.log(`   ➡️  Total Violations: ${result.totalViolations}`);
+      console.log(`   📄  JSON Report: ${result.jsonReportPath}`);
+      console.log(`   📄  HTML Report: ${result.htmlReportPath}`);
     }
 
-    // Generate final combined report
-    console.log('\n🎯 All tests complete. Generating combined report...');
-    generateCombinedReport();
-
-    console.log(`📄 Combined report ready: ${path.join(reportsDir, 'combined-accessibility-report.html')}`);
+    console.log('\n🎯 All flows executed successfully.');
+    console.log(`📊 Reports are available at: ${reportsDir}`);
   } catch (error) {
-    console.error('❌ Dry run failed:', error.message);
+    console.error('❌ Execution failed:', error.stack || error.message);
   }
 }
 

@@ -1,51 +1,30 @@
-const { chromium } = require('playwright');
 const basicActions = require('../flows/actions/basicActions');
 const extendedActions = require('../flows/actions/extendedActions');
 const axeRunner = require('../engines/axeRunner');
-const { addScanResult } = require('../utils/reportAggregator');
 
 const allActions = { ...basicActions, ...extendedActions };
 
 /**
- * Execute steps using Playwright with accessibility scanning.
+ * Executes steps on a given Playwright page, including accessibility scans.
  * @param {Object} params
- * @param {string} [params.url] - Page URL for navigation (if starting fresh).
- * @param {Array} params.steps - Steps to perform.
- * @param {string} params.name - Page name for reporting (required).
- * @param {string} [params.profile] - Accessibility profile (default: quick).
- * @param {Object} [params.pageContext] - Existing browser context to reuse.
+ * @param {import('playwright').Page} params.page - Existing Playwright page instance.
+ * @param {Array} params.steps - Array of step objects (action, selector, value).
+ * @param {string} params.name - Name of the page/flow for reporting.
+ * @param {string} [params.profile='quick'] - Accessibility profile.
+ * @returns {Promise<Object>} Accessibility scan results (if scan was executed).
  */
-module.exports = async ({ url, steps, name, profile = 'quick', pageContext }) => {
-  if (!name) {
-    throw new Error('Flow name is required for reporting.');
+module.exports = async ({ page, steps, name, profile = 'quick' }) => {
+  if (!page) {
+    throw new Error('[MCP] No Playwright page instance provided to genericFlow.');
   }
 
-  let browser, page;
-
-  if (pageContext) {
-    // Reuse existing browser context
-    browser = pageContext.browser;
-    page = pageContext.page;
-    console.log(`[MCP] Reusing browser context for: ${name}`);
-  } else {
-    // Create a new browser context
-    browser = await chromium.launch();
-    const context = await browser.newContext();
-    page = await context.newPage();
-
-    if (!url) {
-      throw new Error('URL is required when no pageContext is provided.');
-    }
-
-    console.log(`[MCP] Navigating to ${url}`);
-    await page.goto(url);
-  }
+  console.log(`[MCP] Starting execution for flow: ${name}`);
+  let lastScanResults = null;
 
   for (const step of steps) {
     if (step.action === 'scan') {
-      console.log(`[MCP] Running accessibility scan on: ${name}`);
-      const results = await axeRunner(page, profile);
-      addScanResult(name, results);
+      console.log(`[MCP] Running accessibility scan on: ${name} (Profile: ${profile})`);
+      lastScanResults = await axeRunner(page, profile);
       continue;
     }
 
@@ -56,7 +35,7 @@ module.exports = async ({ url, steps, name, profile = 'quick', pageContext }) =>
     }
 
     try {
-      console.log(`[MCP] Executing: ${step.action} ${step.selector || step.value}`);
+      console.log(`[MCP] Executing step: ${step.action} ${step.selector || step.value || ''}`);
       await action(page, step);
     } catch (err) {
       console.error(`[MCP] Step failed ${JSON.stringify(step)} → ${err.message}`);
@@ -64,5 +43,6 @@ module.exports = async ({ url, steps, name, profile = 'quick', pageContext }) =>
     }
   }
 
-  return { browser, page };
+  // Return last scan results (if any)
+  return lastScanResults || { violations: [], jsonReportPath: null, baseReportPath: null };
 };
