@@ -17,17 +17,18 @@ const allActions = { ...basicActions, ...extendedActions };
 module.exports = async ({ page, steps, name = 'Unnamed Page', profile = 'quick' }) => {
   console.log(`[MCP] Starting execution for flow: ${name}`);
 
-  let finalResults = { violations: [], jsonReportPath: null, htmlReportPath: null };
+  let allViolations = [];
+  let lastJsonReport = null;
+  let lastHtmlReport = null;
 
   for (const step of steps) {
     if (step.action === 'scan') {
       console.log(`[MCP] Running accessibility scan on: ${name} (Profile: ${profile})`);
       const results = await axeRunner(page, profile);
-      finalResults = {
-        violations: results.violations || [],
-        jsonReportPath: results.jsonReportPath,
-        htmlReportPath: results.htmlReportPath
-      };
+
+      allViolations = allViolations.concat(results.violations || []);
+      lastJsonReport = results.jsonReportPath;
+      lastHtmlReport = results.htmlReportPath;
       continue;
     }
 
@@ -46,5 +47,9 @@ module.exports = async ({ page, steps, name = 'Unnamed Page', profile = 'quick' 
     }
   }
 
-  return finalResults;
+  return {
+    violations: allViolations,
+    jsonReportPath: lastJsonReport,
+    htmlReportPath: lastHtmlReport
+  };
 };
