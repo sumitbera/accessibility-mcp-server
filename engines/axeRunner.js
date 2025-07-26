@@ -1,45 +1,56 @@
 const { injectAxe, getViolations } = require('axe-playwright');
-const { createHtmlReport } = require('axe-html-reporter');
 const fs = require('fs');
 const path = require('path');
-const { ensureDir, clearDir } = require('../utils/fsUtils');
+const { createHtmlReport } = require('axe-html-reporter');
+const { ensureDir } = require('../utils/fsUtils');
 const config = require('../profiles/accessibility.config.json');
 
-module.exports = async function runAxe(page, profile = 'quick') {
-    try {
-        const axeOptions = config[profile] || config.quick;
-        console.log(`[A11Y] Running Axe checks with profile: ${profile}`);
+const reportsDir = path.join(__dirname, '../reports');
 
-        const reportsDir = path.join(__dirname, '../reports');
-        ensureDir(reportsDir);
-        clearDir(reportsDir); // clean up reports folder for fresh scan
+/**
+ * Runs Axe accessibility checks on the given Playwright page.
+ * @param {import('playwright').Page} page - Playwright page instance
+ * @param {string} profile - Accessibility profile (quick|full|strict etc.)
+ * @returns {Promise<{jsonReportPath: string, htmlReportPath: string, violations: Array}>}
+ */
+module.exports = async function axeRunner(page, profile = 'quick') {
+  if (!profile) throw new Error("Accessibility profile is required for Axe runner.");
 
-        // Run axe-core
-        await injectAxe(page);
-        const violations = await getViolations(page, axeOptions);
+  // Ensure reports folder exists
+  ensureDir(reportsDir);
 
-        // Save JSON report
-        const jsonReportPath = path.join(reportsDir, `a11y-results.json`);
-        fs.writeFileSync(jsonReportPath, JSON.stringify(violations, null, 2));
+  const axeOptions = config[profile] || config.quick;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
-        // Save HTML report
-        const baseReportPath = path.join(reportsDir, `a11y-report.html`);
-        createHtmlReport({
-            results: { violations },
-            options: {
-                outputDir: reportsDir,
-                reportFileName: 'a11y-report',
-                reportTitle: `Axe Accessibility Report - ${profile} Profile`,
-                showOnlyViolations: true
-            }
-        });
+  console.log(`[A11Y] Running Axe with profile: ${profile}`);
+  await injectAxe(page);
+  const violations = await getViolations(page, axeOptions);
 
-        console.log(`[A11Y] HTML report saved at ${baseReportPath}`);
-        console.log(`[A11Y] JSON report saved at ${jsonReportPath}`);
+  // Save JSON report
+  const jsonReportPath = path.join(reportsDir, `axe-results-${timestamp}.json`);
+  fs.writeFileSync(jsonReportPath, JSON.stringify(violations, null, 2));
 
-        return { violations, baseReportPath, jsonReportPath };
-    } catch (err) {
-        console.error('[A11Y] Axe Runner failed:', err);
-        throw new Error(`[A11Y] Failed to run Axe checks: ${err.message}`);
+  // Generate Axe HTML report
+  const htmlReportContent = createHtmlReport({
+    results: { violations },
+    options: {
+      reportTitle: `Axe Accessibility Report - ${profile}`,
+      showOnlyViolations: true
     }
+  });
+
+  const htmlReportPath = path.join(reportsDir, `axe-report-${timestamp}.html`);
+  fs.writeFileSync(htmlReportPath, htmlReportContent);
+
+  console.log(`[A11Y] Reports generated:`);
+  console.log(`   - JSON: ${jsonReportPath}`);
+  console.log(`   - HTML: ${htmlReportPath}`);
+
+  return {
+    profile,
+    totalViolations: violations.length,
+    violations,
+    jsonReportPath,
+    htmlReportPath
+  };
 };
