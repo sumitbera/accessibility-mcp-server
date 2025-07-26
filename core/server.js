@@ -60,7 +60,7 @@ async function startServer() {
 
     await typeWriter(`🚀 Launching MCP A11Y Server...\n`, 70);
 
-    CFonts.say('A11Y MCP SERVER', {
+    CFonts.say('A11Y SERVER', {
         font: 'block',
         align: 'center',
         colors: ['white', 'white'],
