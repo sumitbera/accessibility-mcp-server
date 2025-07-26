@@ -8,8 +8,8 @@ let pageInstance = null;
 /**
  * Resolves and executes a flow configuration using Playwright and Axe.
  *
- * @param {Object} flowConfig - The test flow configuration (url, steps, profile, etc.)
- * @param {boolean} [isLastFlow=true] - Whether this is the last flow (to close browser).
+ * @param {Object} flowConfig - The test flow config (url, steps, profile, etc.)
+ * @param {boolean} [isLastFlow=true] - Whether this is the last flow (to close browser)
  */
 module.exports = async (flowConfig, isLastFlow = true) => {
   try {
@@ -30,10 +30,10 @@ module.exports = async (flowConfig, isLastFlow = true) => {
       console.log(`[MCP] Starting browser session at ${url}`);
     }
 
-    // Navigate to the given URL
+    // Always navigate to the given URL for this flow
     await pageInstance.goto(url);
 
-    // Execute steps and get results
+    // Execute the flow and accumulate all violations
     const { violations = [], jsonReportPath, htmlReportPath } = await genericFlow({
       page: pageInstance,
       steps,
@@ -53,8 +53,8 @@ module.exports = async (flowConfig, isLastFlow = true) => {
     return {
       name: name || 'Unnamed Page',
       profile,
-      totalViolations: Array.isArray(violations) ? violations.length : 0,
-      summary: (violations || []).map(v => ({
+      totalViolations: violations.length, // Now includes all scans in the flow
+      summary: violations.map(v => ({
         id: v.id,
         impact: v.impact,
         description: v.description,
