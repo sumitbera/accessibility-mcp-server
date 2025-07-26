@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "3.844.0",
+    "@axe-core/playwright": "^4.10.2",
     "axe-core": "^4.6.3",
     "axe-html-reporter": "2.2.11",
     "axe-playwright": "^2.1.0",
