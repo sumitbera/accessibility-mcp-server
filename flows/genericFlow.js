@@ -1,30 +1,33 @@
-const basicActions = require('../flows/actions/basicActions');
-const extendedActions = require('../flows/actions/extendedActions');
+const basicActions = require('./actions/basicActions');
+const extendedActions = require('./actions/extendedActions');
 const axeRunner = require('../engines/axeRunner');
 
 const allActions = { ...basicActions, ...extendedActions };
 
 /**
- * Executes steps on a given Playwright page, including accessibility scans.
+ * Executes the steps using Playwright and runs Axe scans when `scan` step is encountered.
+ *
  * @param {Object} params
- * @param {import('playwright').Page} params.page - Existing Playwright page instance.
- * @param {Array} params.steps - Array of step objects (action, selector, value).
- * @param {string} params.name - Name of the page/flow for reporting.
- * @param {string} [params.profile='quick'] - Accessibility profile.
- * @returns {Promise<Object>} Accessibility scan results (if scan was executed).
+ * @param {Object} params.page - Playwright page instance.
+ * @param {Array} params.steps - Steps to execute.
+ * @param {string} params.name - Page name.
+ * @param {string} [params.profile] - Accessibility profile.
+ * @returns {Promise<{violations: Array, jsonReportPath: string, htmlReportPath: string}>}
  */
-module.exports = async ({ page, steps, name, profile = 'quick' }) => {
-  if (!page) {
-    throw new Error('[MCP] No Playwright page instance provided to genericFlow.');
-  }
-
+module.exports = async ({ page, steps, name = 'Unnamed Page', profile = 'quick' }) => {
   console.log(`[MCP] Starting execution for flow: ${name}`);
-  let lastScanResults = null;
+
+  let finalResults = { violations: [], jsonReportPath: null, htmlReportPath: null };
 
   for (const step of steps) {
     if (step.action === 'scan') {
       console.log(`[MCP] Running accessibility scan on: ${name} (Profile: ${profile})`);
-      lastScanResults = await axeRunner(page, profile);
+      const results = await axeRunner(page, profile);
+      finalResults = {
+        violations: results.violations || [],
+        jsonReportPath: results.jsonReportPath,
+        htmlReportPath: results.htmlReportPath
+      };
       continue;
     }
 
@@ -35,7 +38,7 @@ module.exports = async ({ page, steps, name, profile = 'quick' }) => {
     }
 
     try {
-      console.log(`[MCP] Executing step: ${step.action} ${step.selector || step.value || ''}`);
+      console.log(`[MCP] Executing step: ${step.action} ${step.selector || step.value}`);
       await action(page, step);
     } catch (err) {
       console.error(`[MCP] Step failed ${JSON.stringify(step)} → ${err.message}`);
@@ -43,6 +46,5 @@ module.exports = async ({ page, steps, name, profile = 'quick' }) => {
     }
   }
 
-  // Return last scan results (if any)
-  return lastScanResults || { violations: [], jsonReportPath: null, baseReportPath: null };
+  return finalResults;
 };

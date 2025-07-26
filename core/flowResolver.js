@@ -8,8 +8,8 @@ let pageInstance = null;
 /**
  * Resolves and executes a flow configuration using Playwright and Axe.
  *
- * @param {Object} flowConfig - The test flow config (url, steps, profile, etc.)
- * @param {boolean} [isLastFlow=true] - Whether this is the last flow (to close browser)
+ * @param {Object} flowConfig - The test flow configuration (url, steps, profile, etc.)
+ * @param {boolean} [isLastFlow=true] - Whether this is the last flow (to close browser).
  */
 module.exports = async (flowConfig, isLastFlow = true) => {
   try {
@@ -20,6 +20,7 @@ module.exports = async (flowConfig, isLastFlow = true) => {
 
     console.log(`[MCP] Executing flow for: ${name || 'Unnamed Page'}`);
     console.log(`[MCP] Profile: ${profile}`);
+    console.log(`[MCP] isLastFlow: ${isLastFlow}`);
 
     // Launch browser if not already running
     if (!browserInstance) {
@@ -29,18 +30,18 @@ module.exports = async (flowConfig, isLastFlow = true) => {
       console.log(`[MCP] Starting browser session at ${url}`);
     }
 
-    // Always navigate to the given URL for this flow
+    // Navigate to the given URL
     await pageInstance.goto(url);
 
-    // Execute the generic flow (includes scan steps internally)
-    const { jsonReportPath, baseReportPath, violations } = await genericFlow({
+    // Execute steps and get results
+    const { violations = [], jsonReportPath, htmlReportPath } = await genericFlow({
       page: pageInstance,
       steps,
       name: name || 'Unnamed Page',
       profile
     });
 
-    // Close the browser if this is the last flow
+    // Close browser if this is the last flow
     if (isLastFlow) {
       console.log('[MCP] Closing browser session.');
       await browserInstance.close();
@@ -52,8 +53,8 @@ module.exports = async (flowConfig, isLastFlow = true) => {
     return {
       name: name || 'Unnamed Page',
       profile,
-      totalViolations: violations.length,
-      summary: violations.map(v => ({
+      totalViolations: Array.isArray(violations) ? violations.length : 0,
+      summary: (violations || []).map(v => ({
         id: v.id,
         impact: v.impact,
         description: v.description,
@@ -61,7 +62,7 @@ module.exports = async (flowConfig, isLastFlow = true) => {
         nodes: v.nodes.map(n => n.target).flat()
       })),
       jsonReportPath,
-      htmlReportPath: baseReportPath
+      htmlReportPath
     };
   } catch (error) {
     console.error('flowResolver failed:', error);

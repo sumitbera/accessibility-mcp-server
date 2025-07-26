@@ -15,7 +15,7 @@ async function run() {
   }
 
   try {
-    // Clean and prepare the reports directory
+    // Prepare the reports directory
     ensureDir(reportsDir);
     clearDir(reportsDir);
     console.log(`[MCP] Reports directory cleaned: ${reportsDir}`);
@@ -23,7 +23,10 @@ async function run() {
     console.log('🧠 Generating flow(s) from LLM...');
     const flowData = await callLLM(prompt);
 
-    // Handle single or multi-step flows
+    if (!flowData || (!Array.isArray(flowData.flows) && !flowData.url)) {
+      throw new Error('Invalid flow data returned from LLM.');
+    }
+
     const flows = Array.isArray(flowData.flows) ? flowData.flows : [flowData];
     console.log(`✅ LLM generated ${flows.length} flow(s).`);
 
@@ -31,23 +34,21 @@ async function run() {
       const flow = flows[i];
       const isLastFlow = i === flows.length - 1;
 
-      // Ensure flow name is present
-      if (!flow.name) {
-        flow.name = `Flow ${i + 1} - ${flow.url || 'Unnamed URL'}`;
-      }
-
-      console.log(`\n🚀 Executing flow: ${flow.name}`);
+      console.log(`\n🚀 [${i + 1}/${flows.length}] Executing flow: ${flow.name || flow.url}`);
       const result = await callMCP(flow, isLastFlow);
 
-      console.log(`   ➡️  Total Violations: ${result.totalViolations}`);
-      console.log(`   📄  JSON Report: ${result.jsonReportPath}`);
-      console.log(`   📄  HTML Report: ${result.htmlReportPath}`);
+      if (result) {
+        console.log(`   ➡️  Total Violations: ${result.totalViolations}`);
+        console.log(`   📄  JSON Report: ${result.jsonReportPath}`);
+        console.log(`   📄  HTML Report: ${result.htmlReportPath}`);
+      } else {
+        console.warn('⚠️ No result returned for this flow.');
+      }
     }
 
     console.log('\n🎯 All flows executed successfully.');
-    console.log(`📊 Reports are available at: ${reportsDir}`);
   } catch (error) {
-    console.error('❌ Execution failed:', error.stack || error.message);
+    console.error('❌ Execution failed:', error.message);
   }
 }
 
